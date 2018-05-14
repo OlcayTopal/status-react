@@ -133,14 +133,22 @@
                                  (on-success chat-id sym-key sym-key-id))
                    :on-error   log-error}))))
 
+(defn add-new-sym-key [{:keys [web3 sym-key on-success]}]
+  (add-sym-key {:web3       web3
+                :sym-key    sym-key
+                :on-success (fn [sym-key-id]
+                              (on-success sym-key sym-key-id))
+                :on-error   log-error}))
+
+(re-frame/reg-fx
+ :shh/add-new-sym-keys
+ (fn [keys]
+   (doseq [key keys]
+     (add-new-sym-key key))))
+
 (re-frame/reg-fx
  :shh/add-new-sym-key
- (fn [{:keys [web3 sym-key on-success]}]
-   (add-sym-key {:web3       web3
-                 :sym-key    sym-key
-                 :on-success (fn [sym-key-id]
-                               (on-success sym-key sym-key-id))
-                 :on-error   log-error})))
+ add-new-sym-key)
 
 (re-frame/reg-fx
  :shh/get-new-sym-key

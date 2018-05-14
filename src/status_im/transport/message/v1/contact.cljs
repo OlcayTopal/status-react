@@ -22,9 +22,9 @@
                                             :topic      topic
                                             :message    message}]))]
       (handlers-macro/merge-fx cofx
-                               {:shh/add-new-sym-key {:web3       (get-in cofx [:db :web3])
-                                                      :sym-key    sym-key
-                                                      :on-success on-success}}
+                               {:shh/add-new-sym-keys [{:web3       (get-in cofx [:db :web3])
+                                                        :sym-key    sym-key
+                                                        :on-success on-success}]}
                                (protocol/init-chat chat-id topic)))))
 
 (defrecord ContactRequest [name profile-image address fcm-token]

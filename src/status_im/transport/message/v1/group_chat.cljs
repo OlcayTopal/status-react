@@ -25,16 +25,20 @@
                                       :payload     this}
                                      cofx)))
   (receive [this _ signature {:keys [db] :as cofx}]
-    (handlers-macro/merge-fx cofx
-                             {:shh/add-new-sym-key {:web3       (:web3 db)
-                                                    :sym-key    sym-key
-                                                    :on-success (fn [sym-key sym-key-id]
-                                                                  (re-frame/dispatch [:group/add-new-sym-key {:chat-id    chat-id
-                                                                                                              :signature  signature
-                                                                                                              :sym-key    sym-key
-                                                                                                              :sym-key-id sym-key-id
-                                                                                                              :message    message}]))}}
-                             (protocol/init-chat chat-id))))
+    (handlers-macro/merge-fx
+     cofx
+     {:shh/add-new-sym-keys
+      [{:web3       (:web3 db)
+        :sym-key    sym-key
+        :on-success (fn [sym-key sym-key-id]
+                      (re-frame/dispatch
+                       [:group/add-new-sym-key
+                        {:chat-id    chat-id
+                         :signature  signature
+                         :sym-key    sym-key
+                         :sym-key-id sym-key-id
+                         :message    message}]))}]}
+     (protocol/init-chat chat-id))))
 
 (defn- user-is-group-admin? [chat-id cofx]
   (= (get-in cofx [:db :chats chat-id :group-admin])

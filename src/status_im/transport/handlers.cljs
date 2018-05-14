@@ -18,16 +18,27 @@
             [status-im.transport.message.v1.group-chat :as v1.group-chat]
             [status-im.data-store.transport :as transport-store]))
 
+(defn receive-message [cofx chat-id message]
+  (let [{:keys [payload sig]} message
+        status-message (-> payload
+                           transport.utils/to-utf8
+                           transit/deserialize)]
+    (when (and sig status-message)
+      (message/receive status-message (or chat-id sig) sig cofx))))
+
+(defn receive-whisper-message [{:keys [db] :as cofx} [js-error js-message chat-id]]
+  (reduce (fn [fx message]
+            (let [temp-cofx (handlers-macro/update-db cofx fx)]
+              (handlers-macro/safe-merge
+               fx
+               (receive-message temp-cofx chat-id message))))
+          {:db db}
+          (js->clj js-message :keywordize-keys true)))
+
 (handlers/register-handler-fx
  :protocol/receive-whisper-message
  [re-frame/trim-v (re-frame/inject-cofx :random-id)]
- (fn [cofx [js-error js-message chat-id]]
-   (let [{:keys [payload sig]} (js->clj js-message :keywordize-keys true)
-         status-message        (-> payload
-                                   transport.utils/to-utf8
-                                   transit/deserialize)]
-     (when (and sig status-message)
-       (message/receive status-message (or chat-id sig) sig cofx)))))
+ receive-whisper-message)
 
 (handlers/register-handler-fx
  :protocol/send-status-message-success
