@@ -57,7 +57,7 @@
  :chat-received-message/add
  message-model/receive-interceptors
  (fn [cofx args]
-   (if (vector (first args))
+   (if (vector? (first args))
      (add args cofx)
      (add-one-message args cofx))))
 
